@@ -1,0 +1,162 @@
+MoxesTemplate.php is a simple php template engine which do not allow adding php code inside the template source. Build for developers who has to allow other poeple to edit their templates.
+
+More information can be found here: http://template.moxes.net
+
+I'll appreciate some feedback.
+
+Author: Milen Hristov <milen@moxes.net>
+
+-----------------------------------------------------------------
+1. Getting started
+MoxesTemplate can be called in two ways.
+
+First is when simply give the template file:
+<?php
+require_once('MoxesTemplate.php');
+
+$tpl = new MoxesTemplate('path/example.tpl');
+....
+?>
+
+
+The second way is to pass a path. When a path is given, you cannot include files outside of this path.
+<?php
+require_once('MoxesTemplate.php');
+
+$tpl = new MoxesTemplate(array('path'=>'some/path','filename'=>'template.tpl'));
+....
+?>
+2. Passing parameters
+You can pass parameters using param(). For example:
+$tpl->param('name', 'George');
+
+
+Or pass an array:
+$names = array( 'George', 'Ivan');
+
+$tpl->param('names', $names );
+3. Passing function references
+You can also proceed a function to the template.
+For example if you want to make translations in the template you can do:
+$names = array(
+'name' => 'George',
+'lastname' => 'Georgiev'
+);
+
+function getName( $name ) {
+global $names;
+return $names[$name];
+}
+
+$tpl->func( 'username', 'getName');
+
+
+Then in the template you can call:
+{username "lastname"}
+
+The following example will return: Georgiev
+4. Printing parsed template
+To print the parsed template you just need to do:
+print $tpl->output();
+5. Template syntax
+The avaible blocks are described bellow.
+5.1. Variable
+Reading scalar variable:
+The name of the person is {$name}.
+
+
+To read a key from a passed array:
+The last name of the person is {$names.lastname}.
+5.2. if
+The syntax of the "if" block is as fallows:
+....
+The boy is {if $age >= "18"}over{else}under{/if}
+....
+
+
+The if statement can be for variables only or variables and strings. The string no matter is it integer or letters is always in double quotes.
+
+Here is a full list of statement examples:
+...
+{if $floor == "10"}
+...
+{if $floor != "10"}
+...
+{if $floor >= "10"}
+...
+{if $floor <= "10"}
+...
+{if $floor > "10"}
+...
+{if $floor < "10"}
+...
+{if $floor}
+...
+{if !$floor}
+...
+{if $floor % "10"}
+...
+{if $floor !% "10"}
+...
+{if $variable == $other}
+...
+I don't think those examples need more explanations.
+
+The {elseif ...} block is the same as the "if" block. There is also {else} and {/if} for closing the if block.
+
+Simple example:
+{if $age < "18"}
+You're under age
+{elseif $age > "18"}
+You're over eighteen.
+{else}
+You're exactly on eighteen.
+{/if}
+5.3. loop
+The loop block is called with only one parameter which has to be an array.
+I like to eat
+{loop $fruit}
+$value
+{/loop}
+
+
+Or can be called with an array of arrays:
+My friends are:
+{loop $friends}
+{$value.name} {$value.lastname}
+{/loop}
+
+
+Loops can be called inside other loops:
+My friends are:
+{loop $friends}
+{$value.name} {$value.lastname} and he likes to eat
+{loop $value.fruit}
+{$value}
+{/loop}
+{/loop}
+
+
+The loop block generates two parameters from the array: $key and $value.
+
+Other parameters that the loop block generates automaticaly are:
+$count - the number of the element counting from 1
+$__isFirst - true if the element is first in the array
+$__isLast - true if the element is last in the array
+$__isOdd - if the element is odd
+$__prevKey - previous $key
+$__prevValue - previous $value
+5.4. include
+You can include other templates or files in the template
+{include "other.tpl"}
+
+
+If you initiate MoxesTemplate with 'path' option, then inside the include block can be included only templates from this path. Every other attempt will couse error for non existing file.
+5.5. functions
+When you pass a reference to a function, you create a new block. For example if you pass:
+<?php
+$tpl->func('translate', 'tr')
+?>
+
+
+This will create block {translate "...."} and the second parameter in the block will be passed to the function "tr" in the php.
